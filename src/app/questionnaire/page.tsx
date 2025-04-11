@@ -19,7 +19,7 @@ type CommonAnswers = {
 
 export default function Questionnaire() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState('common')
+  const [activeTab, setActiveTab] = useState<string>('common')
   const [companyId, setCompanyId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -103,7 +103,7 @@ export default function Questionnaire() {
     // 공통 탭의 필수 필드 검증
     if (activeTab === 'common') {
       if (!formData.common.systemDescription) {
-        setError('현재 사용 중인 시스템에 대한 설명을 입력해주세요.')
+        setError('현재 사용 중인 시스템에 대해 설명해 주세요.')
         return false
       }
       if (!formData.common.historyManagement) {
@@ -136,7 +136,7 @@ export default function Questionnaire() {
     }
     
     // 마지막 탭(관리)인 경우에만 제출 처리
-    if (activeTab === 'management') {
+    if (String(activeTab) === 'management') {
       setLoading(true)
       setError(null)
       
@@ -201,7 +201,7 @@ export default function Questionnaire() {
       <div className="mb-6">
         <div className="flex flex-wrap gap-2 mb-4">
           <button 
-            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm ${activeTab === 'common' 
+            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm ${String(activeTab) === 'common' 
               ? 'bg-blue-600 text-white' 
               : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}`}
             onClick={() => handleTabChange('common')}
@@ -209,7 +209,7 @@ export default function Questionnaire() {
             공통/기술
           </button>
           <button 
-            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm ${activeTab === 'sales' 
+            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm ${String(activeTab) === 'sales' 
               ? 'bg-blue-600 text-white' 
               : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}`}
             onClick={() => handleTabChange('sales')}
@@ -217,7 +217,7 @@ export default function Questionnaire() {
             영업
           </button>
           <button 
-            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm ${activeTab === 'purchase' 
+            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm ${String(activeTab) === 'purchase' 
               ? 'bg-blue-600 text-white' 
               : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}`}
             onClick={() => handleTabChange('purchase')}
@@ -225,7 +225,7 @@ export default function Questionnaire() {
             구매
           </button>
           <button 
-            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm ${activeTab === 'production' 
+            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm ${String(activeTab) === 'production' 
               ? 'bg-blue-600 text-white' 
               : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}`}
             onClick={() => handleTabChange('production')}
@@ -233,7 +233,7 @@ export default function Questionnaire() {
             생산
           </button>
           <button 
-            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm ${activeTab === 'accounting' 
+            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm ${String(activeTab) === 'accounting' 
               ? 'bg-blue-600 text-white' 
               : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}`}
             onClick={() => handleTabChange('accounting')}
@@ -241,7 +241,7 @@ export default function Questionnaire() {
             회계
           </button>
           <button 
-            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm ${activeTab === 'management' 
+            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm ${String(activeTab) === 'management' 
               ? 'bg-blue-600 text-white' 
               : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}`}
             onClick={() => handleTabChange('management')}
@@ -251,7 +251,7 @@ export default function Questionnaire() {
         </div>
         
         <div className="bg-white shadow-md rounded-lg p-6">
-          {activeTab === 'common' && (
+          {String(activeTab) === 'common' && (
             <>
               <h3 className="text-xl font-semibold text-gray-800 mb-4">공통/기술 영역</h3>
               <form className="space-y-6" onSubmit={handleSubmit}>
@@ -439,14 +439,14 @@ export default function Questionnaire() {
                     className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     disabled={loading}
                   >
-                    {loading ? '저장 중...' : activeTab === 'management' ? '제출' : '다음'}
+                    {loading ? '저장 중...' : String(activeTab) === 'management' ? '제출' : '다음'}
                   </button>
                 </div>
               </form>
             </>
           )}
           
-          {activeTab === 'sales' && (
+          {String(activeTab) === 'sales' && (
             <>
               <h3 className="text-xl font-semibold text-gray-800 mb-4">영업 관리 영역</h3>
               <form className="space-y-6" onSubmit={handleSubmit}>
@@ -603,7 +603,7 @@ export default function Questionnaire() {
             </>
           )}
           
-          {activeTab === 'purchase' && (
+          {String(activeTab) === 'purchase' && (
             <>
               <h3 className="text-xl font-semibold text-gray-800 mb-4">구매 관리 영역</h3>
               <form className="space-y-6" onSubmit={handleSubmit}>
@@ -732,7 +732,7 @@ export default function Questionnaire() {
             </>
           )}
           
-          {activeTab === 'production' && (
+          {String(activeTab) === 'production' && (
             <>
               <h3 className="text-xl font-semibold text-gray-800 mb-4">생산 관리 영역</h3>
               <form className="space-y-6" onSubmit={handleSubmit}>
@@ -889,7 +889,7 @@ export default function Questionnaire() {
             </>
           )}
           
-          {activeTab === 'accounting' && (
+          {String(activeTab) === 'accounting' && (
             <>
               <h3 className="text-xl font-semibold text-gray-800 mb-4">회계 관리 영역</h3>
               <form className="space-y-6" onSubmit={handleSubmit}>
@@ -1063,7 +1063,7 @@ export default function Questionnaire() {
             </>
           )}
           
-          {activeTab === 'management' && (
+          {String(activeTab) === 'management' && (
             <>
               <h3 className="text-xl font-semibold text-gray-800 mb-4">경영 관리 영역</h3>
               <form className="space-y-6" onSubmit={handleSubmit}>
