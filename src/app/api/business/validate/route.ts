@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// 배포 설정: 이 API 라우트는 서버 사이드 렌더링으로 실행되어야 함
+export const dynamic = 'force-dynamic';
+
 // API 키 (환경변수로 관리하는 것이 좋지만 예제에서는 직접 사용)
 const API_KEY = 'q7ZHxRIxDS5HlfShjSHI5dMqMfU5Xw8PfQ9MJIUk37Mp%2BmAyv798S%2F7d%2F5VbDhHu0D0Zf9MdP831IlMjMvCD2A%3D%3D';
 

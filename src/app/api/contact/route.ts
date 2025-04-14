@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { saveContactRequest } from '@/lib/supabase'
 
+// 배포 설정: 이 API 라우트는 서버 사이드 렌더링으로 실행되어야 함
+export const dynamic = 'force-dynamic';
+
 // 이메일 발송 함수
 async function sendEmail(data: any) {
   try {

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 
+// 배포 설정: 이 API 라우트는 서버 사이드 렌더링으로 실행되어야 함
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     // 요청 본문 파싱
