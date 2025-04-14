@@ -5,7 +5,6 @@ const nextConfig = {
     unoptimized: true,
     domains: ['localhost'],
   },
-  basePath: '/codaiconsulting',
 }
 
 module.exports = nextConfig 
