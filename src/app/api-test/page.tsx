@@ -164,7 +164,7 @@ export default function APITest() {
       
       console.log('품목 조회 API 호출 시작 - 세션 ID:', sessionId, 'Zone:', zone);
       
-      const response = await fetch('/api/ecount/products', {
+      const response = await fetch('/api/ecount/products/list', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,7 +172,6 @@ export default function APITest() {
         body: JSON.stringify({
           SESSION_ID: sessionId,
           ZONE: zone,
-          PROD_CD: '', // 빈 값으로 모든 품목 조회
           DOMAIN: apiDomain
         }),
       });
@@ -181,15 +180,15 @@ export default function APITest() {
       const data = await response.json();
       console.log('품목 조회 API 응답 데이터:', data);
       
-      if (data.success && data.data) {
+      if (data.success && data.data?.Result) {
         setTestResults(prev => [
           { 
             type: 'products', 
             success: true, 
-            message: `품목 조회 성공 (${data.domain} 사용)`, 
+            message: `품목 조회 성공: 총 ${data.data.Result.length}개 품목`, 
             timestamp: new Date().toLocaleTimeString(), 
             data: data.data,
-            count: data.data.Result?.length || 0
+            count: data.data.Result.length
           },
           ...prev
         ]);

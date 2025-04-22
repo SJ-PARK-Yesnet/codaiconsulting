@@ -16,13 +16,6 @@ export default function APIScorePage() {
   const [showDetails, setShowDetails] = useState(false);
   const [apiDomain, setApiDomain] = useState('');
   
-  // 거래처 관리 상태 추가
-  const [customerList, setCustomerList] = useState<any[]>([]);
-  const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
-  const [customerError, setCustomerError] = useState('');
-  const [searchText, setSearchText] = useState('');
-  const [activeTab, setActiveTab] = useState('score'); // 'score' 또는 'customers'
-  
   // 점수 상태
   const [score, setScore] = useState({
     connectionScore: 0,   // API 연결 점수 (30점)
@@ -44,16 +37,6 @@ export default function APIScorePage() {
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactSuccess, setContactSuccess] = useState(false);
   const [contactError, setContactError] = useState('');
-  
-  // 신규 거래처 입력 폼
-  const [newCustomer, setNewCustomer] = useState({
-    CUST_CD: '',
-    CUST_NAME: '',
-    CUST_ADDR: '',
-    CUST_TEL: '',
-    CUST_EMAIL: ''
-  });
-  const [showCustomerForm, setShowCustomerForm] = useState(false);
   
   // 점수 체크 함수
   const checkScore = async () => {
@@ -232,119 +215,6 @@ export default function APIScorePage() {
     }
   };
   
-  // 거래처 조회 함수
-  const searchCustomers = async () => {
-    if (!sessionId || !zone) {
-      setCustomerError('먼저 API 점검을 실행하여 세션 ID를 발급받아야 합니다.');
-      return;
-    }
-    
-    setIsLoadingCustomers(true);
-    setCustomerError('');
-    
-    try {
-      const response = await fetch('/api/ecount/customers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          SESSION_ID: sessionId,
-          ZONE: zone,
-          DOMAIN: apiDomain || 'sboapi',
-          SEARCH_TEXT: searchText
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        setCustomerError(`거래처 조회 실패: ${data.message || '알 수 없는 오류'}`);
-        setIsLoadingCustomers(false);
-        return;
-      }
-      
-      setCustomerList(data.data?.Result || []);
-    } catch (err) {
-      setCustomerError('거래처 조회 중 오류가 발생했습니다.');
-    } finally {
-      setIsLoadingCustomers(false);
-    }
-  };
-  
-  // 신규 거래처 등록 함수
-  const registerCustomer = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!sessionId || !zone) {
-      setCustomerError('먼저 API 점검을 실행하여 세션 ID를 발급받아야 합니다.');
-      return;
-    }
-    
-    if (!newCustomer.CUST_CD || !newCustomer.CUST_NAME) {
-      setCustomerError('거래처 코드와 거래처명은 필수 입력 항목입니다.');
-      return;
-    }
-    
-    setIsLoadingCustomers(true);
-    setCustomerError('');
-    
-    try {
-      const response = await fetch('/api/ecount/customers/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          SESSION_ID: sessionId,
-          ZONE: zone,
-          DOMAIN: apiDomain || 'sboapi',
-          CUSTOMER_DATA: {
-            CUST_CD: newCustomer.CUST_CD,
-            CUST_NAME: newCustomer.CUST_NAME,
-            CUST_ADDR: newCustomer.CUST_ADDR,
-            CUST_TEL: newCustomer.CUST_TEL,
-            CUST_EMAIL: newCustomer.CUST_EMAIL
-          }
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        setCustomerError(`거래처 등록 실패: ${data.message || '알 수 없는 오류'}`);
-        setIsLoadingCustomers(false);
-        return;
-      }
-      
-      // 등록 성공 시 폼 초기화
-      setNewCustomer({
-        CUST_CD: '',
-        CUST_NAME: '',
-        CUST_ADDR: '',
-        CUST_TEL: '',
-        CUST_EMAIL: ''
-      });
-      setShowCustomerForm(false);
-      
-      // 거래처 목록 다시 조회
-      searchCustomers();
-    } catch (err) {
-      setCustomerError('거래처 등록 중 오류가 발생했습니다.');
-    } finally {
-      setIsLoadingCustomers(false);
-    }
-  };
-  
-  // 입력 폼 변경 핸들러
-  const handleNewCustomerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewCustomer(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-  
   // 컨설팅 요청 제출
   const submitContact = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -437,505 +307,283 @@ ${contactForm.message}
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-6">이카운트 API 점검 도구</h1>
       
-      {/* API 인증 폼 */}
-      <div className="bg-white shadow-md rounded-lg p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4">API 인증 정보</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="companyCode">
-              회사 코드
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="companyCode"
-              type="text"
-              placeholder="회사 코드 입력"
-              value={companyCode}
-              onChange={(e) => setCompanyCode(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="userId">
-              사용자 ID
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="userId"
-              type="text"
-              placeholder="사용자 ID 입력"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="apiKey">
-              API 키
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="apiKey"
-              type="password"
-              placeholder="API 키 입력"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              disabled={isLoading}
-            />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* API 인증 폼 - 왼쪽 */}
+        <div className="bg-white shadow-md rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-4">API 인증 정보</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="companyCode">
+                회사 코드
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="companyCode"
+                type="text"
+                placeholder="회사 코드 입력"
+                value={companyCode}
+                onChange={(e) => setCompanyCode(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="userId">
+                사용자 ID
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="userId"
+                type="text"
+                placeholder="사용자 ID 입력"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="apiKey">
+                API 키
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="apiKey"
+                type="password"
+                placeholder="API 키 입력"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex justify-center">
+              <button
+                className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                type="button"
+                onClick={checkScore}
+                disabled={isLoading}
+              >
+                {isLoading ? '점검 중...' : 'API 점검 실행'}
+              </button>
+            </div>
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong className="font-bold">오류: </strong>
+                <span className="block sm:inline">{error}</span>
+              </div>
+            )}
           </div>
         </div>
-        <div className="flex justify-center">
-          <button
-            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            type="button"
-            onClick={checkScore}
-            disabled={isLoading}
-          >
-            {isLoading ? '점검 중...' : 'API 점검 실행'}
-          </button>
-        </div>
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
-            <strong className="font-bold">오류: </strong>
-            <span className="block sm:inline">{error}</span>
+
+        {/* API 점검 결과 - 오른쪽 */}
+        {checkComplete && (
+          <div className="bg-white shadow-md rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-6">API 점검 결과</h2>
+            
+            <div className="space-y-6">
+              {/* 점수 표시 */}
+              <div className="text-center">
+                <div className="relative inline-block">
+                  <svg className="w-48 h-48" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="16" fill="none" stroke="#e6e6e6" strokeWidth="2"></circle>
+                    <circle 
+                      cx="18" cy="18" r="16" fill="none" 
+                      stroke={score.totalScore >= 70 ? '#22c55e' : score.totalScore >= 40 ? '#eab308' : '#ef4444'} 
+                      strokeWidth="2" 
+                      strokeDasharray={`${score.totalScore} 100`}
+                      transform="rotate(-90 18 18)"
+                      strokeLinecap="round"
+                    ></circle>
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-5xl font-bold">{score.totalScore}</span>
+                    <span className="text-gray-500">점</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* 세부 점수 */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className={`p-4 rounded-md ${score.connectionScore === 30 ? 'bg-green-50' : 'bg-red-50'}`}>
+                  <p className="text-sm text-gray-600 mb-1">API 연결 점수</p>
+                  <p className={`font-medium text-lg ${score.connectionScore === 30 ? 'text-green-600' : 'text-red-600'}`}>
+                    {score.connectionScore}/30점
+                  </p>
+                </div>
+                
+                <div className={`p-4 rounded-md ${score.dataAccuracyScore >= 50 ? 'bg-green-50' : score.dataAccuracyScore >= 30 ? 'bg-yellow-50' : 'bg-red-50'}`}>
+                  <p className="text-sm text-gray-600 mb-1">데이터 정확성 점수</p>
+                  <p className={`font-medium text-lg ${score.dataAccuracyScore >= 50 ? 'text-green-600' : score.dataAccuracyScore >= 30 ? 'text-yellow-600' : 'text-red-600'}`}>
+                    {score.dataAccuracyScore}/70점
+                  </p>
+                </div>
+              </div>
+              
+              {/* 재고 분석 결과 */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-md font-medium">재고 분석 결과</h3>
+                  <button 
+                    onClick={() => setShowDetails(!showDetails)}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    {showDetails ? '세부정보 숨기기' : '세부정보 보기'}
+                  </button>
+                </div>
+                
+                {(score.negativeItems as any[]).length > 0 ? (
+                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                    <p className="text-yellow-700">
+                      <strong>주의:</strong> {(score.negativeItems as any[]).length}개의 품목에서 마이너스 재고가 발견되었습니다.
+                    </p>
+                    {showDetails && (
+                      <div className="mt-3 max-h-60 overflow-y-auto">
+                        <table className="min-w-full text-sm">
+                          <thead>
+                            <tr className="bg-yellow-100">
+                              <th className="py-2 px-3 text-left">창고</th>
+                              <th className="py-2 px-3 text-left">품목코드</th>
+                              <th className="py-2 px-3 text-left">품목명</th>
+                              <th className="py-2 px-3 text-right">재고량</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(score.negativeItems as any[]).map((item, idx) => (
+                              <tr key={idx} className="border-t border-yellow-200">
+                                <td className="py-2 px-3">{item.WH_DES || item.WH_CD}</td>
+                                <td className="py-2 px-3">{item.PROD_CD}</td>
+                                <td className="py-2 px-3">{item.PROD_DES}</td>
+                                <td className="py-2 px-3 text-right text-red-600">{parseFloat(item.BAL_QTY).toFixed(2)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                    <p className="text-green-700">
+                      <strong>양호:</strong> 마이너스 재고가 발견되지 않았습니다.
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              {/* 컨설팅 요청 폼 */}
+              <div className="pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-semibold mb-4">재고관리 컨설팅 문의</h3>
+                
+                {contactSuccess ? (
+                  <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded mb-4">
+                    <p className="text-green-700">
+                      컨설팅 요청이 성공적으로 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={submitContact} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-gray-700 text-sm font-medium mb-1">이름 <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={contactForm.name}
+                          onChange={handleContactChange}
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="홍길동"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-gray-700 text-sm font-medium mb-1">회사명 <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          name="companyName"
+                          value={contactForm.companyName}
+                          onChange={handleContactChange}
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="ㅇㅇ주식회사"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-gray-700 text-sm font-medium mb-1">이메일 <span className="text-red-500">*</span></label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={contactForm.email}
+                          onChange={handleContactChange}
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="example@company.com"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-gray-700 text-sm font-medium mb-1">전화번호</label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={contactForm.phone}
+                          onChange={handleContactChange}
+                          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="010-1234-5678"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-gray-700 text-sm font-medium mb-1">문의사항</label>
+                      <textarea
+                        name="message"
+                        value={contactForm.message}
+                        onChange={handleContactChange}
+                        rows={3}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="재고관리 컨설팅 관련 문의사항을 입력해주세요."
+                      />
+                    </div>
+                    
+                    {contactError && (
+                      <div className="p-3 bg-red-50 text-red-800 rounded-md">
+                        {contactError}
+                      </div>
+                    )}
+                    
+                    <div>
+                      <button 
+                        type="submit"
+                        disabled={contactSubmitting}
+                        className="w-full py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {contactSubmitting ? '요청 중...' : '컨설팅 요청하기'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+            
+            {/* 테스트 결과 로그 */}
+            {testResults.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-md font-medium mb-2">API 호출 로그</h3>
+                <div className="bg-gray-50 p-3 rounded-md max-h-48 overflow-y-auto text-sm">
+                  {testResults.map((result, idx) => (
+                    <div key={idx} className={`mb-1 pb-1 ${idx < testResults.length - 1 ? 'border-b border-gray-200' : ''}`}>
+                      <span className="text-gray-500 text-xs">{result.timestamp}</span>{' '}
+                      <span className={result.success ? 'text-green-600' : 'text-red-600'}>
+                        {result.success ? '✓' : '✗'} {result.message}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
-      
-      {/* 탭 메뉴 추가 */}
-      {sessionId && (
-        <div className="mb-6">
-          <div className="flex border-b">
-            <button
-              className={`py-2 px-4 font-semibold ${activeTab === 'score' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
-              onClick={() => setActiveTab('score')}
-            >
-              API 점검 결과
-            </button>
-            <button
-              className={`py-2 px-4 font-semibold ${activeTab === 'customers' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
-              onClick={() => {
-                setActiveTab('customers');
-                if (customerList.length === 0 && sessionId) {
-                  searchCustomers();
-                }
-              }}
-            >
-              거래처 관리
-            </button>
-          </div>
-        </div>
-      )}
-      
-      {/* API 점검 결과 */}
-      {activeTab === 'score' && checkComplete && (
-        <div className="bg-white shadow-md rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-6">API 점검 결과</h2>
-          
-          <div className="grid md:grid-cols-5 gap-6">
-            {/* 왼쪽: 결과 및 점수 */}
-            <div className="md:col-span-3 bg-white p-6 rounded-xl shadow-md">
-              <h2 className="text-xl font-semibold mb-6">API 점검 결과</h2>
-              
-              {!checkComplete ? (
-                <div className="text-center py-12 text-gray-500">
-                  {isLoading ? (
-                    <p>API 점검을 진행 중입니다...</p>
-                  ) : (
-                    <p>좌측 폼을 작성하고 점수 체크하기를 클릭하세요.</p>
-                  )}
-                </div>
-              ) : (
-                <div>
-                  {/* 점수 표시 */}
-                  <div className="mb-8 text-center">
-                    <div className="relative inline-block">
-                      <svg className="w-48 h-48" viewBox="0 0 36 36">
-                        <circle cx="18" cy="18" r="16" fill="none" stroke="#e6e6e6" strokeWidth="2"></circle>
-                        <circle 
-                          cx="18" cy="18" r="16" fill="none" 
-                          stroke={score.totalScore >= 70 ? '#22c55e' : score.totalScore >= 40 ? '#eab308' : '#ef4444'} 
-                          strokeWidth="2" 
-                          strokeDasharray={`${score.totalScore} 100`}
-                          transform="rotate(-90 18 18)"
-                          strokeLinecap="round"
-                        ></circle>
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-5xl font-bold">{score.totalScore}</span>
-                        <span className="text-gray-500">점</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* 세부 점수 */}
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className={`p-4 rounded-md ${score.connectionScore === 30 ? 'bg-green-50' : 'bg-red-50'}`}>
-                      <p className="text-sm text-gray-600 mb-1">API 연결 점수</p>
-                      <p className={`font-medium text-lg ${score.connectionScore === 30 ? 'text-green-600' : 'text-red-600'}`}>
-                        {score.connectionScore}/30점
-                      </p>
-                    </div>
-                    
-                    <div className={`p-4 rounded-md ${score.dataAccuracyScore >= 50 ? 'bg-green-50' : score.dataAccuracyScore >= 30 ? 'bg-yellow-50' : 'bg-red-50'}`}>
-                      <p className="text-sm text-gray-600 mb-1">데이터 정확성 점수</p>
-                      <p className={`font-medium text-lg ${score.dataAccuracyScore >= 50 ? 'text-green-600' : score.dataAccuracyScore >= 30 ? 'text-yellow-600' : 'text-red-600'}`}>
-                        {score.dataAccuracyScore}/70점
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* 재고 분석 결과 */}
-                  <div className="mb-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-md font-medium">재고 분석 결과</h3>
-                      <button 
-                        onClick={() => setShowDetails(!showDetails)}
-                        className="text-sm text-blue-600 hover:text-blue-800"
-                      >
-                        {showDetails ? '세부정보 숨기기' : '세부정보 보기'}
-                      </button>
-                    </div>
-                    
-                    {(score.negativeItems as any[]).length > 0 ? (
-                      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                        <p className="text-yellow-700">
-                          <strong>주의:</strong> {(score.negativeItems as any[]).length}개의 품목에서 마이너스 재고가 발견되었습니다.
-                        </p>
-                        {showDetails && (
-                          <div className="mt-3 max-h-60 overflow-y-auto">
-                            <table className="min-w-full text-sm">
-                              <thead>
-                                <tr className="bg-yellow-100">
-                                  <th className="py-2 px-3 text-left">창고</th>
-                                  <th className="py-2 px-3 text-left">품목코드</th>
-                                  <th className="py-2 px-3 text-left">품목명</th>
-                                  <th className="py-2 px-3 text-right">재고량</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {(score.negativeItems as any[]).map((item, idx) => (
-                                  <tr key={idx} className="border-t border-yellow-200">
-                                    <td className="py-2 px-3">{item.WH_DES || item.WH_CD}</td>
-                                    <td className="py-2 px-3">{item.PROD_CD}</td>
-                                    <td className="py-2 px-3">{item.PROD_DES}</td>
-                                    <td className="py-2 px-3 text-right text-red-600">{parseFloat(item.BAL_QTY).toFixed(2)}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
-                        <p className="text-green-700">
-                          <strong>양호:</strong> 마이너스 재고가 발견되지 않았습니다.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* 컨설팅 요청 폼 */}
-                  <div className="mt-8 pt-6 border-t border-gray-200">
-                    <h3 className="text-lg font-semibold mb-4">재고관리 컨설팅 문의</h3>
-                    
-                    {contactSuccess ? (
-                      <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded mb-4">
-                        <p className="text-green-700">
-                          컨설팅 요청이 성공적으로 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.
-                        </p>
-                      </div>
-                    ) : (
-                      <form onSubmit={submitContact} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-gray-700 text-sm font-medium mb-1">이름 <span className="text-red-500">*</span></label>
-                            <input
-                              type="text"
-                              name="name"
-                              value={contactForm.name}
-                              onChange={handleContactChange}
-                              required
-                              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="홍길동"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-gray-700 text-sm font-medium mb-1">회사명 <span className="text-red-500">*</span></label>
-                            <input
-                              type="text"
-                              name="companyName"
-                              value={contactForm.companyName}
-                              onChange={handleContactChange}
-                              required
-                              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="ㅇㅇ주식회사"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-gray-700 text-sm font-medium mb-1">이메일 <span className="text-red-500">*</span></label>
-                            <input
-                              type="email"
-                              name="email"
-                              value={contactForm.email}
-                              onChange={handleContactChange}
-                              required
-                              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="example@company.com"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-gray-700 text-sm font-medium mb-1">전화번호</label>
-                            <input
-                              type="tel"
-                              name="phone"
-                              value={contactForm.phone}
-                              onChange={handleContactChange}
-                              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="010-1234-5678"
-                            />
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-gray-700 text-sm font-medium mb-1">문의사항</label>
-                          <textarea
-                            name="message"
-                            value={contactForm.message}
-                            onChange={handleContactChange}
-                            rows={3}
-                            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="재고관리 컨설팅 관련 문의사항을 입력해주세요."
-                          />
-                        </div>
-                        
-                        {contactError && (
-                          <div className="p-3 bg-red-50 text-red-800 rounded-md">
-                            {contactError}
-                          </div>
-                        )}
-                        
-                        <div>
-                          <button 
-                            type="submit"
-                            disabled={contactSubmitting}
-                            className="w-full py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {contactSubmitting ? '요청 중...' : '컨설팅 요청하기'}
-                          </button>
-                        </div>
-                      </form>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {/* 테스트 결과 로그 */}
-              {testResults.length > 0 && (
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h3 className="text-md font-medium mb-2">API 호출 로그</h3>
-                  <div className="bg-gray-50 p-3 rounded-md max-h-48 overflow-y-auto text-sm">
-                    {testResults.map((result, idx) => (
-                      <div key={idx} className={`mb-1 pb-1 ${idx < testResults.length - 1 ? 'border-b border-gray-200' : ''}`}>
-                        <span className="text-gray-500 text-xs">{result.timestamp}</span>{' '}
-                        <span className={result.success ? 'text-green-600' : 'text-red-600'}>
-                          {result.success ? '✓' : '✗'} {result.message}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* 거래처 관리 탭 */}
-      {activeTab === 'customers' && sessionId && (
-        <div className="bg-white shadow-md rounded-lg p-6 mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">거래처 관리</h2>
-            <button
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              onClick={() => setShowCustomerForm(!showCustomerForm)}
-            >
-              {showCustomerForm ? '취소' : '거래처 등록'}
-            </button>
-          </div>
-          
-          {/* 신규 거래처 등록 폼 */}
-          {showCustomerForm && (
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <h3 className="text-lg font-semibold mb-3">신규 거래처 등록</h3>
-              <form onSubmit={registerCustomer} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="custCode">
-                      거래처 코드 *
-                    </label>
-                    <input
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      id="custCode"
-                      name="CUST_CD"
-                      type="text"
-                      placeholder="거래처 코드"
-                      value={newCustomer.CUST_CD}
-                      onChange={handleNewCustomerChange}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="custName">
-                      거래처명 *
-                    </label>
-                    <input
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      id="custName"
-                      name="CUST_NAME"
-                      type="text"
-                      placeholder="거래처명"
-                      value={newCustomer.CUST_NAME}
-                      onChange={handleNewCustomerChange}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="custAddr">
-                      주소
-                    </label>
-                    <input
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      id="custAddr"
-                      name="CUST_ADDR"
-                      type="text"
-                      placeholder="주소"
-                      value={newCustomer.CUST_ADDR}
-                      onChange={handleNewCustomerChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="custTel">
-                      전화번호
-                    </label>
-                    <input
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      id="custTel"
-                      name="CUST_TEL"
-                      type="text"
-                      placeholder="전화번호"
-                      value={newCustomer.CUST_TEL}
-                      onChange={handleNewCustomerChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="custEmail">
-                      이메일
-                    </label>
-                    <input
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      id="custEmail"
-                      name="CUST_EMAIL"
-                      type="email"
-                      placeholder="이메일"
-                      value={newCustomer.CUST_EMAIL}
-                      onChange={handleNewCustomerChange}
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <button
-                    type="button"
-                    className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    onClick={() => setShowCustomerForm(false)}
-                  >
-                    취소
-                  </button>
-                  <button
-                    type="submit"
-                    className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isLoadingCustomers ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    disabled={isLoadingCustomers}
-                  >
-                    {isLoadingCustomers ? '처리 중...' : '등록'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-          
-          {/* 거래처 검색 */}
-          <div className="mb-6">
-            <div className="flex space-x-2">
-              <input
-                className="shadow appearance-none border rounded flex-grow py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                type="text"
-                placeholder="거래처 코드 또는 이름으로 검색"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && searchCustomers()}
-              />
-              <button
-                className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isLoadingCustomers ? 'opacity-50 cursor-not-allowed' : ''}`}
-                onClick={searchCustomers}
-                disabled={isLoadingCustomers}
-              >
-                검색
-              </button>
-            </div>
-          </div>
-          
-          {customerError && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-              <strong className="font-bold">오류: </strong>
-              <span className="block sm:inline">{customerError}</span>
-            </div>
-          )}
-          
-          {/* 거래처 목록 */}
-          {isLoadingCustomers ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600">거래처 정보를 불러오는 중...</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="py-2 px-4 border-b text-left">거래처 코드</th>
-                    <th className="py-2 px-4 border-b text-left">거래처명</th>
-                    <th className="py-2 px-4 border-b text-left">전화번호</th>
-                    <th className="py-2 px-4 border-b text-left">이메일</th>
-                    <th className="py-2 px-4 border-b text-left">주소</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {customerList.length > 0 ? (
-                    customerList.map((customer, index) => (
-                      <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                        <td className="py-2 px-4 border-b">{customer.CUST_CD}</td>
-                        <td className="py-2 px-4 border-b">{customer.CUST_NAME}</td>
-                        <td className="py-2 px-4 border-b">{customer.CUST_TEL}</td>
-                        <td className="py-2 px-4 border-b">{customer.CUST_EMAIL}</td>
-                        <td className="py-2 px-4 border-b">{customer.CUST_ADDR}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="py-4 text-center text-gray-500">
-                        검색 결과가 없습니다. 검색어를 입력하고 검색 버튼을 클릭하세요.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 } 
