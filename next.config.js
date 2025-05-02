@@ -8,13 +8,13 @@ const nextConfig = {
   
   images: {
     unoptimized: true,
-    domains: ['localhost', '*.vercel.app'],
+    domains: ['localhost', 'codaiconsulting.vercel.app', 'yesnet.kr'],
   },
   
   // Vercel 배포를 위한 추가 설정
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000', '*.vercel.app'],
+      allowedOrigins: ['localhost:3000', 'codaiconsulting.vercel.app', 'yesnet.kr'],
     },
   },
   
@@ -22,16 +22,16 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: '/api/:path*',
-      },
-      {
         source: '/feed.xml',
         destination: '/api/feed.xml',
       },
       {
         source: '/sitemap.xml',
         destination: '/sitemap.xml',
+      },
+      {
+        source: '/robots.txt',
+        destination: '/robots.txt',
       }
     ];
   }

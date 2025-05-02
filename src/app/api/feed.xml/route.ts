@@ -16,15 +16,15 @@ export async function GET() {
         <item>
           <title>ERP 컨설팅 서비스</title>
           <description>전문 ERP 컨설팅 서비스를 제공합니다.</description>
-          <link>${siteUrl}/services</link>
-          <guid>${siteUrl}/services</guid>
+          <link>${siteUrl}/ecount-consulting</link>
+          <guid>${siteUrl}/ecount-consulting</guid>
           <pubDate>${currentDate}</pubDate>
         </item>
         <item>
-          <title>API 연동 서비스</title>
-          <description>다양한 ERP 시스템과의 API 연동 서비스를 제공합니다.</description>
-          <link>${siteUrl}/api-integration</link>
-          <guid>${siteUrl}/api-integration</guid>
+          <title>회사 소개</title>
+          <description>예스넷 ERP 컨설팅 회사를 소개합니다.</description>
+          <link>${siteUrl}/company-info</link>
+          <guid>${siteUrl}/company-info</guid>
           <pubDate>${currentDate}</pubDate>
         </item>
       </channel>
