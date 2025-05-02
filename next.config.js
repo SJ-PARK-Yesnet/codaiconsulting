@@ -32,10 +32,6 @@ const nextConfig = {
       {
         source: '/robots.txt',
         destination: '/robots.txt',
-      },
-      {
-        source: '/_not-found',
-        destination: '/',
       }
     ];
   },
