@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const siteUrl = process.env.SITE_URL || 'https://codaiconsulting.com';
+  const siteUrl = 'https://yesnet.kr';
   const currentDate = new Date().toISOString();
 
   const rss = `<?xml version="1.0" encoding="UTF-8" ?>
     <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
       <channel>
-        <title>코다이컨설팅</title>
+        <title>예스넷 ERP 컨설팅</title>
         <description>ERP 컨설팅 및 개발 서비스</description>
         <link>${siteUrl}</link>
-        <atom:link href="${siteUrl}/api/feed.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="${siteUrl}/feed.xml" rel="self" type="application/rss+xml" />
         <language>ko-KR</language>
         <lastBuildDate>${currentDate}</lastBuildDate>
         <item>
