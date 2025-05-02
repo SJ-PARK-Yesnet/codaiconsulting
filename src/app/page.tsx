@@ -1,23 +1,9 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 
 export default function Home() {
-  const router = useRouter();
-
-  // 페이지 로드 시 기본 경로 확인
-  useState(() => {
-    if (typeof window !== 'undefined') {
-      const path = window.location.pathname;
-      if (path !== '/') {
-        router.replace('/');
-      }
-    }
-  });
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-b from-white to-gray-100">
       <div className="max-w-5xl w-full text-center">
@@ -74,7 +60,7 @@ export default function Home() {
             </Link>
           </div>
         </div>
-        
+
         {/* 이카운트 API 연결 테스트 */}
         <div className="bg-white p-6 rounded-xl shadow-md mb-12">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">이카운트 API 연결 테스트</h2>
