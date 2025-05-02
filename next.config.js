@@ -20,14 +20,12 @@ const nextConfig = {
   
   // 기본 404 페이지 처리
   async rewrites() {
-    return {
-      fallback: [
-        {
-          source: '/:path*',
-          destination: '/',
-        },
-      ],
-    };
+    return [
+      {
+        source: '/:path*',
+        destination: '/',
+      },
+    ];
   },
 }
 
