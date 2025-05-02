@@ -32,24 +32,9 @@ const nextConfig = {
       {
         source: '/sitemap.xml',
         destination: '/sitemap.xml',
-      },
-      {
-        source: '/:path*',
-        destination: '/:path*',
-      },
+      }
     ];
-  },
-
-  // 리다이렉트 설정
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/',
-        permanent: false,
-      },
-    ];
-  },
+  }
 }
 
 module.exports = nextConfig 
