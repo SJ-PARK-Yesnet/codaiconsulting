@@ -18,28 +18,35 @@ const nextConfig = {
     },
   },
   
-  // 기본 404 페이지 처리
+  // 라우팅 설정
   async rewrites() {
-    return [
-      {
-        source: '/:path*',
-        destination: '/',
-      },
-    ];
-  },
-
-  // API 라우트 설정
-  async redirects() {
     return [
       {
         source: '/api/:path*',
         destination: '/api/:path*',
-        permanent: true,
       },
       {
         source: '/feed.xml',
         destination: '/api/feed.xml',
-        permanent: true,
+      },
+      {
+        source: '/sitemap.xml',
+        destination: '/sitemap.xml',
+      },
+      {
+        source: '/:path*',
+        destination: '/:path*',
+      },
+    ];
+  },
+
+  // 리다이렉트 설정
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/',
+        permanent: false,
       },
     ];
   },
