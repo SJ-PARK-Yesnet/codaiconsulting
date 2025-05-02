@@ -27,6 +27,22 @@ const nextConfig = {
       },
     ];
   },
+
+  // API 라우트 설정
+  async redirects() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: '/api/:path*',
+        permanent: true,
+      },
+      {
+        source: '/feed.xml',
+        destination: '/api/feed.xml',
+        permanent: true,
+      },
+    ];
+  },
 }
 
 module.exports = nextConfig 
