@@ -66,6 +66,17 @@ const nextConfig = {
   // 정적 파일 생성 설정
   output: 'standalone',
   poweredByHeader: false,
+
+  // 404 페이지 처리
+  async redirects() {
+    return [
+      {
+        source: '/_not-found',
+        destination: '/',
+        permanent: true,
+      }
+    ];
+  },
 }
 
 module.exports = nextConfig 
