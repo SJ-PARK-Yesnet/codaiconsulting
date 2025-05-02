@@ -61,7 +61,11 @@ const nextConfig = {
         ],
       },
     ];
-  }
+  },
+
+  // 정적 파일 생성 설정
+  output: 'standalone',
+  poweredByHeader: false,
 }
 
 module.exports = nextConfig 
