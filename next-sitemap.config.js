@@ -2,11 +2,11 @@
 module.exports = {
   siteUrl: 'https://yesnet.kr',
   generateRobotsTxt: true,
-  generateIndexSitemap: false,
+  generateIndexSitemap: true,
   changefreq: 'daily',
   priority: 0.7,
   sitemapSize: 7000,
-  exclude: ['/api/*', '/api-test', '/api-score', '/feed.xml'],
+  exclude: ['/api/*', '/api-test', '/api-score'],
   robotsTxtOptions: {
     policies: [
       {
@@ -14,6 +14,9 @@ module.exports = {
         allow: '/',
         disallow: ['/api/*', '/api-test', '/api-score'],
       },
+    ],
+    additionalSitemaps: [
+      'https://yesnet.kr/feed.xml'
     ],
   },
 } 
