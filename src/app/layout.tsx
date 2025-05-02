@@ -19,11 +19,12 @@ export const metadata: Metadata = {
     type: 'website',
   },
   icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' }
-    ],
-    apple: { url: '/favicon.ico' },
-    shortcut: { url: '/favicon.ico' }
+    icon: '/favicon.ico',
+    apple: '/favicon.ico',
+    shortcut: '/favicon.ico'
+  },
+  alternates: {
+    canonical: 'https://yesnet.kr',
   },
 }
 
