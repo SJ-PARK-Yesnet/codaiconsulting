@@ -27,7 +27,7 @@ const nextConfig = {
       },
       {
         source: '/sitemap.xml',
-        destination: '/sitemap.xml',
+        destination: '/api/sitemap'
       },
       {
         source: '/robots.txt',

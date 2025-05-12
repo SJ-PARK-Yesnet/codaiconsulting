@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /api/*
+Disallow: /api-test
+Disallow: /api-score
+
+# Host
+Host: https://yesnet.kr
+
+# Sitemaps
+Sitemap: https://yesnet.kr/sitemap.xml
+Sitemap: https://yesnet.kr/feed.xml
