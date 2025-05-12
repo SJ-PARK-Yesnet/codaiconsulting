@@ -26,6 +26,10 @@ const nextConfig = {
         destination: '/api/feed.xml',
       },
       {
+        source: '/rss',
+        destination: '/api/feed.xml',
+      },
+      {
         source: '/sitemap.xml',
         destination: '/api/sitemap'
       },
@@ -40,6 +44,19 @@ const nextConfig = {
     return [
       {
         source: '/feed.xml',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/xml',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, s-maxage=3600',
+          },
+        ],
+      },
+      {
+        source: '/rss',
         headers: [
           {
             key: 'Content-Type',

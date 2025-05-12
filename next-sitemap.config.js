@@ -14,7 +14,8 @@ module.exports = {
       },
     ],
     additionalSitemaps: [
-      'https://yesnet.kr/feed.xml'
+      'https://yesnet.kr/feed.xml',
+      'https://yesnet.kr/rss'
     ],
   },
   // 사이트맵 XML 커스텀 헤더 - xmlns 속성 제거
