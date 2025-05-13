@@ -7,11 +7,11 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: '예스넷(주) ERP 컨설팅 서비스',
+  title: '예스넷(주) 이카운트 ERP 컨설팅 서비스',
   description: '귀사에 가장 적합한 ERP 시스템을 찾아드립니다. 이카운트 ERP 전문 컨설팅 서비스를 제공합니다.',
   metadataBase: new URL('https://yesnet.kr'),
   openGraph: {
-    title: '예스넷(주) ERP 컨설팅 서비스',
+    title: '예스넷(주) 이카운트 ERP 컨설팅 서비스',
     description: '귀사에 가장 적합한 ERP 시스템을 찾아드립니다. 이카운트 ERP 전문 컨설팅 서비스를 제공합니다.',
     url: 'https://yesnet.kr',
     siteName: '예스넷(주)',
