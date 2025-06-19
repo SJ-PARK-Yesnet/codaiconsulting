@@ -4,13 +4,12 @@ module.exports = {
   generateRobotsTxt: true,
   generateIndexSitemap: false,
   sitemapSize: 7000,
-  exclude: ['/api/*', '/api-test', '/api-score'],
+  // exclude: ['/api/*', '/api-test', '/api-score'],
   robotsTxtOptions: {
     policies: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/*', '/api-test', '/api-score'],
       },
     ],
     additionalSitemaps: [

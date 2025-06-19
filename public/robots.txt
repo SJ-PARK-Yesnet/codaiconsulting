@@ -1,9 +1,7 @@
 # *
 User-agent: *
 Allow: /
-Disallow: /api/*
-Disallow: /api-test
-Disallow: /api-score
+
 
 # Host
 Host: https://yesnet.kr
