@@ -126,14 +126,15 @@ export async function POST(req: NextRequest) {
     }
     
     // 이메일 발신자 설정
-    const emailFrom = from || smtpUser || (usingTestAccount ? 'test@example.com' : 'nekisj@yesneterp.com')
-    
+    //const emailFrom = from || smtpUser || (usingTestAccount ? 'test@example.com' : 'nekisj@yesneterp.com')
+
     // 이메일 옵션 설정
     const mailOptions = {
-      from: `"${usingTestAccount ? '테스트 발신자' : '예스넷(주) ERP 컨설팅'}" <${emailFrom}>`,
+      from: `"예스넷(주) ERP 컨설팅" <${smtpUser}>`, // 반드시 SMTP 계정
       to,
       subject: usingTestAccount ? `[테스트] ${subject}` : subject,
       text: usingTestAccount ? `이것은 테스트 이메일입니다.\n\n${text}` : text,
+      replyTo: from // 문의자가 입력한 이메일은 replyTo로만 사용
     }
     
     console.log('메일 옵션:', mailOptions)
