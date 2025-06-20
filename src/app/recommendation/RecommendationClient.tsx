@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { saveRecommendation, saveContactRequest, getRecommendation, sendEmail } from '@/lib/supabase';
+import { saveRecommendation, saveContactRequest, getRecommendation, getQuestionnaire, sendEmail } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 
 type RecommendationInsert = Database['public']['Tables']['recommendations']['Insert'];
 type ContactRequestInsert = Database['public']['Tables']['contact_requests']['Insert'];
+type QuestionnaireData = Database['public']['Tables']['questionnaires']['Row'];
 
 export default function RecommendationClient() {
   const [companyId, setCompanyId] = useState<string | null>(null);
@@ -60,81 +61,134 @@ export default function RecommendationClient() {
         setRecommendationId(result.data.id);
         setLoading(false);
       } else {
-        if (qId) {
-          await saveDummyRecommendation(cId, qId);
-        } else {
-          setError('질문지 정보가 없습니다. 이전 단계부터 진행해주세요.');
-          setLoading(false);
-        }
+        await generateAndSaveRecommendation(cId, qId);
       }
     } catch (err) {
-      setError('추천 결과 조회 중 오류가 발생했습니다.');
-      if (qId) {
-        try {
-          await saveDummyRecommendation(cId, qId);
-        } catch (createErr) {
-          setError('추천 결과를 생성할 수 없습니다. 다시 시도해주세요.');
-          setLoading(false);
-        }
-      } else {
+      setError('추천 결과 조회 중 오류가 발생했습니다. 새로 추천을 생성합니다.');
+      try {
+        await generateAndSaveRecommendation(cId, qId);
+      } catch (createErr) {
+        setError('추천 결과를 생성할 수 없습니다. 다시 시도해주세요.');
         setLoading(false);
       }
     }
   };
 
-  const saveDummyRecommendation = async (cId: string, qId: string) => {
+  const generateAndSaveRecommendation = async (cId: string, qId: string) => {
     try {
+      const { data: questionnaireData, error: questionnaireError } = await getQuestionnaire(qId);
+      if (questionnaireError || !questionnaireData) {
+        throw new Error('설문 답변을 불러오는 데 실패했습니다.');
+      }
+
+      const answers = questionnaireData.common_answers as any;
+      const accountingAnswers = questionnaireData.accounting_answers as any;
+      const userCount = answers.userCount || 0;
+      const wantEcount = answers.wantEcount === '예';
+
+      let recommended_erp = '이카운트 ERP';
+      let reasons: any = {};
+      let setup_guide = '';
+
+      if (accountingAnswers.directTaxFiling === 'yes' || accountingAnswers.selfBookkeeping === 'yes') {
+        recommended_erp = '더존 ERP';
+        reasons = {
+          businessFit: '자체 기장 및 세금 신고 등 전문적인 회계 처리에 강점',
+          costEfficiency: '다양한 라인업(Amaranth 10, ERP iU)으로 비즈니스 규모에 맞는 시스템 선택',
+          userFriendly: '강력한 회계/세무 기능과 그룹사 관리 기능 제공',
+          integrationCapability: '그룹웨어, 클라우드 등 다양한 솔루션과 연동하여 통합 경영 환경 구축',
+          score: { businessFit: 92, featureFit: 98, costEfficiency: 80 }
+        };
+        setup_guide = `
+# 더존 ERP 세팅 가이드
+## 초기 설정 단계
+1. 경영 환경 분석 및 ISP(정보화 전략 계획) 수립
+2. 서버 구축 및 시스템 환경 설정 (구축형의 경우)
+3. 데이터 마이그레이션 및 초기 데이터 검증
+## 주요 모듈 설정
+- 회계: IFRS, 내부회계관리제도 등 고급 회계 기능 설정
+- 인사/급여: 복잡한 급여 계산식 및 연말정산 프로세스 커스터마이징
+- 그룹웨어: 전자결재, 경비 청구 등 프로세스 자동화 설정`;
+      } else if (wantEcount || userCount < 50) {
+        recommended_erp = '이카운트 ERP';
+        reasons = {
+          businessFit: '50인 미만 중소기업에 최적화된 클라우드 기반 ERP 시스템',
+          costEfficiency: '월 4만원의 합리적인 비용으로 모든 기능 사용 가능',
+          userFriendly: '사용자 친화적 인터페이스로 빠른 적응 가능',
+          integrationCapability: '회계, 영업, 재고, 생산, 급여 등 주요 모듈 통합 관리',
+          score: { businessFit: 95, featureFit: 90, costEfficiency: 98 }
+        };
+        setup_guide = `
+# 이카운트 ERP 세팅 가이드
+## 초기 설정 단계
+1. 회사 정보 등록 및 기초 코드 설정 (거래처, 품목, 창고)
+2. 사용자 계정 생성 및 권한 설정
+3. 전표 및 문서 양식 커스터마이징
+## 주요 모듈 설정
+- 재고: 품목별 초기 재고 수량 등록
+- 회계: 계정과목 설정 및 초기 이월 설정
+- 급여: 사원 정보 및 급여 조건 등록`;
+      } else if (userCount >= 50 && userCount < 300) {
+        recommended_erp = '영림원 ERP';
+        reasons = {
+          businessFit: '50-300인 규모의 중견/성장기업 맞춤형 솔루션 제공',
+          costEfficiency: '구축형과 클라우드형 선택 가능, 유연한 가격 정책',
+          userFriendly: '산업별 특화 프로세스 내장으로 높은 업무 적합도',
+          integrationCapability: 'K-System Ace: 확장성과 유연성이 뛰어난 프로세스 기반 ERP',
+          score: { businessFit: 90, featureFit: 92, costEfficiency: 85 }
+        };
+        setup_guide = `
+# 영림원 ERP 세팅 가이드
+## 초기 설정 단계
+1. 기간시스템 분석 및 인터페이스(I/F) 설계
+2. 마스터 데이터(기준정보) 표준화 및 정비
+3. 사용자 교육 및 테스트 진행
+## 주요 모듈 설정
+- 생산: 공정관리, 품질관리 등 상세 생산 프로세스 설정
+- 회계: 연결회계 및 IFRS 지원 기능 설정
+- 영업: 산업별 특화 영업 프로세스(수주, 출하 등) 적용`;
+      } else {
+        recommended_erp = '더존 ERP';
+        reasons = {
+          businessFit: '300인 이상 기업 및 복잡한 회계/관리 요구사항에 적합',
+          costEfficiency: '다양한 라인업(Amaranth 10, ERP iU)으로 비즈니스 규모에 맞는 시스템 선택',
+          userFriendly: '강력한 회계/세무 기능과 그룹사 관리 기능 제공',
+          integrationCapability: '그룹웨어, 클라우드 등 다양한 솔루션과 연동하여 통합 경영 환경 구축',
+          score: { businessFit: 88, featureFit: 95, costEfficiency: 80 }
+        };
+        setup_guide = `
+# 더존 ERP 세팅 가이드
+## 초기 설정 단계
+1. 경영 환경 분석 및 ISP(정보화 전략 계획) 수립
+2. 서버 구축 및 시스템 환경 설정 (구축형의 경우)
+3. 데이터 마이그레이션 및 초기 데이터 검증
+## 주요 모듈 설정
+- 회계: IFRS, 내부회계관리제도 등 고급 회계 기능 설정
+- 인사/급여: 복잡한 급여 계산식 및 연말정산 프로세스 커스터마이징
+- 그룹웨어: 전자결재, 경비 청구 등 프로세스 자동화 설정`;
+      }
+
       const recommendationData: RecommendationInsert = {
         company_id: cId,
         questionnaire_id: qId,
-        recommended_erp: '이카운트 ERP',
-        reasons: {
-          businessFit: '중소기업에 최적화된 클라우드 기반 ERP 시스템',
-          costEfficiency: '비용 효율적인 가격 정책(구독형 모델)',
-          userFriendly: '사용자 친화적 인터페이스로 빠른 적응 가능',
-          integrationCapability: '회계, 영업, 재고 관리 모듈 연동 우수',
-          score: {
-            businessFit: 90,
-            featureFit: 85,
-            costEfficiency: 95
-          }
-        },
-        setup_guide: `
-# 이카운트 ERP 세팅 가이드
-
-## 초기 설정 단계
-1. 회사 정보 등록
-2. 사용자 계정 생성 및 권한 설정
-3. 부서 및 직원 정보 설정
-4. 기초 코드 등록 (거래처, 품목, 계정과목 등)
-5. 전표 양식 및 문서 양식 설정
-
-## 주요 모듈 설정
-- 회계 모듈: 회계 기수 설정, 계정 과목 설정
-- 영업 모듈: 판매 단가 설정, 할인 정책 설정
-- 재고 모듈: 창고 정보 등록, 재고 단위 설정
-
-더 자세한 설정 가이드는 전문 컨설턴트의 도움을 받아 진행하시는 것을 권장합니다.
-        `,
+        recommended_erp,
+        reasons,
+        setup_guide,
         created_at: new Date().toISOString()
       };
+
       const result = await saveRecommendation(recommendationData);
-      if (result.error) {
-        throw result.error;
-      }
-      if (!result.data || result.data.length === 0) {
-        throw new Error('추천 데이터 저장 결과가 반환되지 않았습니다');
-      }
+      if (result.error) throw result.error;
+      if (!result.data || result.data.length === 0) throw new Error('추천 데이터 저장 결과가 반환되지 않았습니다');
+      
       setRecommendation({
         id: result.data[0].id,
-        recommended_erp: recommendationData.recommended_erp,
-        reasons: recommendationData.reasons,
-        setup_guide: recommendationData.setup_guide
+        ...recommendationData
       });
       setRecommendationId(result.data[0].id);
       setError(null);
     } catch (err: any) {
-      setError(err.message || '추천 결과 저장 중 오류가 발생했습니다.');
+      setError(err.message || '추천 결과 생성 중 오류가 발생했습니다.');
       setRecommendation(null);
       setRecommendationId(null);
     } finally {

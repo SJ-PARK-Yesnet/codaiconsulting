@@ -1031,6 +1031,62 @@ export default function Questionnaire() {
                         </label>
                       </div>
                     </div>
+
+                    <div>
+                      <p className="block text-sm font-medium text-gray-700 mb-2">세금 신고를 직접 진행하시나요?</p>
+                      <div className="space-y-2">
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="directTaxFiling"
+                            value="yes"
+                            checked={formData.accounting.directTaxFiling === 'yes'}
+                            onChange={handleChange}
+                            className="mr-2"
+                          />
+                          <span>예</span>
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="directTaxFiling"
+                            value="no"
+                            checked={formData.accounting.directTaxFiling === 'no'}
+                            onChange={handleChange}
+                            className="mr-2"
+                          />
+                          <span>아니오</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="block text-sm font-medium text-gray-700 mb-2">자체기장을 하고 계신가요?</p>
+                      <div className="space-y-2">
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="selfBookkeeping"
+                            value="yes"
+                            checked={formData.accounting.selfBookkeeping === 'yes'}
+                            onChange={handleChange}
+                            className="mr-2"
+                          />
+                          <span>예</span>
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="selfBookkeeping"
+                            value="no"
+                            checked={formData.accounting.selfBookkeeping === 'no'}
+                            onChange={handleChange}
+                            className="mr-2"
+                          />
+                          <span>아니오</span>
+                        </label>
+                      </div>
+                    </div>
     
                     <div>
                       <label htmlFor="accountingNotes" className="block text-sm font-medium text-gray-700 mb-1">

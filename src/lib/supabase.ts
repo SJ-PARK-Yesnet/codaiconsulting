@@ -122,39 +122,16 @@ export async function getCompanyInfo(companyId: string) {
 }
 
 // 추천 결과 조회
-export async function getRecommendation(companyId: string) {
-  try {
-    // single()을 사용하지 않고 보통의 쿼리로 변경
-    const { data, error } = await supabase
-      .from('recommendations')
-      .select(`
-        *,
-        companies(*),
-        questionnaires(*)
-      `)
-      .eq('company_id', companyId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-    
-    if (error) {
-      console.error('Supabase 쿼리 오류:', error)
-      throw error
-    }
-    
-    // 결과가 없는 경우를 명시적으로 처리
-    if (!data || data.length === 0) {
-      return { data: null, error: null }
-    }
-    
-    return { data: data[0], error: null }
-  } catch (error: any) {
-    console.error('추천 결과 조회 오류:', error)
-    const errorMessage = error.message || '알 수 없는 오류'
-    const errorDetails = error.details || ''
-    console.error(`상세 오류: ${errorMessage}, 세부정보: ${errorDetails}`)
-    return { data: null, error }
-  }
-}
+export const getRecommendation = async (companyId: string) => {
+  const { data, error } = await supabase
+    .from('recommendations')
+    .select('*')
+    .eq('company_id', companyId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+  return { data, error };
+};
 
 // 이카운트 컨설팅 저장
 export async function saveEcountConsulting(data: any) {
@@ -227,19 +204,14 @@ export async function getEcountConsulting(id: string) {
 }
 
 // 이메일 발송 함수
-export async function sendEmail(emailData: {
-  to: string;
-  from: string;
-  subject: string;
-  text: string;
-}) {
+export const sendEmail = async (to: string, subject: string, text: string) => {
   try {
     const response = await fetch('/api/send-email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(emailData),
+      body: JSON.stringify({ to, subject, text }),
     });
 
     const data = await response.json();
@@ -253,7 +225,7 @@ export async function sendEmail(emailData: {
     console.error('이메일 발송 오류:', error);
     return { data: null, error };
   }
-}
+};
 
 // 문의 메시지 저장
 export async function saveContactMessage(contactData: {
@@ -278,4 +250,14 @@ export async function saveContactMessage(contactData: {
     console.error('문의 메시지 저장 오류:', error)
     return { data: null, error }
   }
-} 
+}
+
+// 질문지 조회
+export const getQuestionnaire = async (questionnaireId: string) => {
+  const { data, error } = await supabase
+    .from('questionnaires')
+    .select('*')
+    .eq('id', questionnaireId)
+    .single();
+  return { data, error };
+}; 

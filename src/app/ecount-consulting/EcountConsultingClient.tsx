@@ -122,7 +122,7 @@ export default function EcountConsultingClient() {
     
     // 사업자번호 형식 검증
     const validateBusinessNumber = (number: string): boolean => {
-      const regex = /^\d{3}-\d{2}-\d{5}$/
+      const regex = /^\d{10}$/;
       return regex.test(number)
     }
   
@@ -134,7 +134,7 @@ export default function EcountConsultingClient() {
       }
   
       if (!validateBusinessNumber(formData.business_number)) {
-        setError('사업자번호 형식이 올바르지 않습니다. 000-00-00000 형식으로 입력해주세요.')
+        setError('사업자번호 10자리를 정확히 입력해주세요.')
         return
       }
   
@@ -183,17 +183,22 @@ export default function EcountConsultingClient() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const { name, value } = e.target
       
-      // 사업자번호 변경 시 검증 상태 초기화
-      if (name === 'business_number') {
-        setVerified(false)
-        setBusinessStatus(null)
-      }
-      
       setFormData(prev => ({
         ...prev,
         [name]: value
       }))
     }
+
+    const handleBusinessNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { value } = e.target;
+      const numericValue = value.replace(/[^0-9]/g, '');
+      setVerified(false);
+      setBusinessStatus(null);
+      setFormData(prev => ({
+        ...prev,
+        business_number: numericValue
+      }));
+    };
     
     const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target
@@ -407,7 +412,27 @@ export default function EcountConsultingClient() {
         const emailSubject = type === 'setting' 
           ? `[이카운트 세팅 요청] ${formData.company_name}`
           : `[이카운트 고도화 요청] ${formData.company_name}`
-        const emailBody = `\n회사명: ${formData.company_name}\n담당자: ${formData.contact_person}\n연락처: ${formData.phone}\n이메일: ${formData.email}\n이카운트 사용기간: ${formData.current_usage_years}년\n사용수준: ${formData.current_usage_level}\n주요 사용 모듈: ${formData.main_modules.join(', ')}\n현재 문제점: ${formData.pain_points}\n개선 요구사항: ${formData.improvement_needs}\n진단 점수: ${score}/100점\n컨설팅 유형: ${type === 'setting' ? '이카운트 세팅 요청' : '이카운트 고도화 요청'}\n추가 요청사항: ${additionalInfo}\n---\n예스넷(주)\n대표: 박승주\n주소: 경기도 안양시 동안구 벌말로 66, 평촌역하이필드지식산업센터 B동 904호\n전화번호: 070.8657.2080\n이메일: yesnet@yesneterp.com\n사업자등록번호: 581-88-03426\n        `.trim()
+        const emailBody = `
+회사명: ${formData.company_name}
+담당자: ${formData.contact_person}
+연락처: ${formData.phone}
+이메일: ${formData.email}
+이카운트 사용기간: ${formData.current_usage_years}년
+사용수준: ${formData.current_usage_level}
+주요 사용 모듈: ${formData.main_modules.join(', ')}
+현재 문제점: ${formData.pain_points}
+개선 요구사항: ${formData.improvement_needs}
+진단 점수: ${score}/100점
+컨설팅 유형: ${type === 'setting' ? '이카운트 세팅 요청' : '이카운트 고도화 요청'}
+추가 요청사항: ${additionalInfo}
+---
+예스넷(주)
+대표: 박승주
+주소: 경기도 안양시 동안구 벌말로 66, 평촌역하이필드지식산업센터 B동 904호
+전화번호: 070.8657.2080
+이메일: yesnet@yesneterp.com
+사업자등록번호: 581-88-03426
+        `.trim()
         // 실제 이메일 발송
         const emailResult = await sendEmail({
           to: emailTo,
@@ -617,91 +642,91 @@ export default function EcountConsultingClient() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">이카운트 사용 현황 조사</h2>
             <p className="text-gray-600 mb-6">현재 이카운트 사용 현황을 파악하여 최적의 컨설팅 방향을 제안해 드립니다.</p>
             
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <label htmlFor="business_number" className="block text-sm font-semibold text-gray-900 mb-2">사업자번호</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    id="business_number"
+                <label htmlFor="business_number" className="block text-sm font-medium text-gray-700">사업자번호</label>
+                <div className="flex gap-2 mt-1">
+                  <input 
+                    type="text" 
+                    id="business_number" 
                     name="business_number"
-                    placeholder="000-00-00000"
-                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-base placeholder-gray-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
+                    placeholder="숫자만 10자리 입력"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     value={formData.business_number}
-                    onChange={handleChange}
-                    maxLength={12}
+                    onChange={handleBusinessNumberChange}
+                    maxLength={10}
                     required
                   />
                   <button
                     type="button"
                     onClick={verifyBusinessNumber}
-                    disabled={verifying || !formData.business_number}
-                    className="flex-shrink-0 px-6 py-3 text-base font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                    disabled={verifying || !formData.business_number || formData.business_number.length !== 10}
+                    className="min-w-[80px] px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 whitespace-nowrap"
                   >
                     {verifying ? '검증 중...' : '검증'}
                   </button>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">형식: 000-00-00000</p>
                 {verified && businessStatus && (
                   <p className="mt-1 text-xs text-green-600">
                     ✓ 확인 완료: {businessStatus}
                   </p>
                 )}
               </div>
+
+              <div>
+                <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">회사명</label>
+                <input 
+                  type="text" 
+                  id="company_name" 
+                  name="company_name"
+                  placeholder="회사명을 입력하세요"
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-base placeholder-gray-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
+                  value={formData.company_name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="contact_person" className="block text-sm font-medium text-gray-700 mb-1">담당자</label>
+                <input
+                  type="text"
+                  id="contact_person"
+                  name="contact_person"
+                  placeholder="담당자 성함을 입력하세요"
+                  value={formData.contact_person}
+                  onChange={handleChange}
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-base placeholder-gray-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
+                  required
+                />
+              </div>
               
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="company_name" className="block text-sm font-semibold text-gray-900 mb-2">회사명</label>
-                  <input
-                    type="text"
-                    id="company_name"
-                    name="company_name"
-                    value={formData.company_name}
-                    onChange={handleChange}
-                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-base placeholder-gray-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="contact_person" className="block text-sm font-semibold text-gray-900 mb-2">담당자명</label>
-                  <input
-                    type="text"
-                    id="contact_person"
-                    name="contact_person"
-                    value={formData.contact_person}
-                    onChange={handleChange}
-                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-base placeholder-gray-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">이메일</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-base placeholder-gray-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-semibold text-gray-900 mb-2">연락처</label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-base placeholder-gray-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
-                    placeholder="예: 010-1234-5678"
-                    required
-                  />
-                </div>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="이메일 주소를 입력하세요"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-base placeholder-gray-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">휴대폰 번호</label>
+                <input
+                  type="text"
+                  id="phone"
+                  name="phone"
+                  placeholder="'-' 없이 숫자만 입력"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-base placeholder-gray-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
+                  required
+                />
               </div>
               
               <hr className="border-gray-200" />

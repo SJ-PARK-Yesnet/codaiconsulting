@@ -39,9 +39,16 @@ export default function CompanyInfoClient() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     let updatedValue: string | number | null = value;
+    
     if (id === 'lastYearRevenue') {
       updatedValue = value ? parseInt(value) : null;
+    } else if (id === 'businessNumber') {
+      // 숫자만 남기고 모든 문자 제거
+      updatedValue = value.replace(/[^0-9]/g, '');
+      setVerified(false);
+      setBusinessStatus(null);
     }
+    
     const fieldMap: Record<string, keyof Omit<CompanyInsert, 'id' | 'created_at' | 'updated_at'>> = {
       businessNumber: 'business_number',
       companyName: 'company_name',
@@ -50,10 +57,7 @@ export default function CompanyInfoClient() {
       lastYearRevenue: 'last_year_revenue',
       currentERP: 'current_erp'
     };
-    if (id === 'businessNumber') {
-      setVerified(false);
-      setBusinessStatus(null);
-    }
+    
     const field = fieldMap[id];
     if (field) {
       setFormData(prev => ({
@@ -64,7 +68,8 @@ export default function CompanyInfoClient() {
   };
 
   const validateBusinessNumber = (number: string) => {
-    const regex = /^\d{3}-\d{2}-\d{5}$/;
+    // 숫자 10자리인지 검증
+    const regex = /^\d{10}$/;
     return regex.test(number);
   };
 
@@ -74,7 +79,7 @@ export default function CompanyInfoClient() {
       return;
     }
     if (!validateBusinessNumber(formData.business_number)) {
-      setError('사업자번호 형식이 올바르지 않습니다. 000-00-00000 형식으로 입력해주세요.');
+      setError('사업자번호 10자리를 정확히 입력해주세요.');
       return;
     }
     setVerifying(true);
@@ -122,7 +127,7 @@ export default function CompanyInfoClient() {
         throw new Error('필수 항목을 모두 입력해주세요.');
       }
       if (!validateBusinessNumber(formData.business_number)) {
-        throw new Error('사업자번호 형식이 올바르지 않습니다. 000-00-00000 형식으로 입력해주세요.');
+        throw new Error('사업자번호 10자리를 정확히 입력해주세요.');
       }
       if (!verified) {
         throw new Error('사업자번호 검증을 먼저 완료해주세요.');
@@ -171,11 +176,11 @@ export default function CompanyInfoClient() {
               <input 
                 type="text" 
                 id="businessNumber" 
-                placeholder="000-00-00000" 
+                placeholder="숫자만 10자리 입력" 
                 className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg shadow-sm focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-base placeholder-gray-400 transition"
                 value={formData.business_number}
                 onChange={handleChange}
-                maxLength={12}
+                maxLength={10}
                 required 
               />
               <button
@@ -187,7 +192,7 @@ export default function CompanyInfoClient() {
                 {verifying ? '검증 중...' : '검증'}
               </button>
             </div>
-            <p className="mt-1 text-xs text-gray-400">형식: 000-00-00000</p>
+            <p className="mt-1 text-xs text-gray-400">하이픈(-) 없이 숫자 10자리만 입력하세요.</p>
             {verified && businessStatus && (
               <p className="mt-1 text-xs text-green-600 font-semibold">
                 ✓ 확인 완료: {businessStatus}
