@@ -434,12 +434,7 @@ export default function EcountConsultingClient() {
 사업자등록번호: 581-88-03426
         `.trim()
         // 실제 이메일 발송
-        const emailResult = await sendEmail({
-          to: emailTo,
-          from: 'yesnet@yesneterp.com',
-          subject: emailSubject,
-          text: emailBody
-        })
+        const emailResult = await sendEmail(emailTo, emailSubject, emailBody)
         if (emailResult.error) {
           setSuccess('요청이 저장되었습니다. 시스템 오류로 이메일은 발송되지 않았지만, 담당자가 확인 후 연락드리겠습니다.')
         } else {
