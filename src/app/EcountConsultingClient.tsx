@@ -491,12 +491,7 @@ export default function EcountConsultingClient() {
       
       // 실제 이메일 발송
       console.log('이메일 발송 요청 시작...')
-      const emailResult = await sendEmail({
-        to: emailTo,
-        from: emailFrom,
-        subject: emailSubject,
-        text: emailBody
-      })
+      const emailResult = await sendEmail(emailTo, emailSubject, emailBody)
       
       if (emailResult.error) {
         console.warn('이메일 발송 실패:', emailResult.error)
