@@ -6,23 +6,6 @@ export const metadata = {
   keywords: '이카운트, ERP, API, 개발, 연동, 가이드, 예제, 인증, 예스넷'
 };
 
-export function Head() {
-  return (
-    <>
-      {/* Google tag (gtag.js) */}
-      <script async src="https://www.googletagmanager.com/gtag/js?id=G-SGYF6ZSPH6"></script>
-      <script dangerouslySetInnerHTML={{
-        __html: `
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-SGYF6ZSPH6');
-        `
-      }} />
-    </>
-  );
-}
-
 export default function Page() {
   return <EcountApiDocsPage />;
 } 
