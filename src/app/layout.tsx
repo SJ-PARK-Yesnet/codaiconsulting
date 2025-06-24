@@ -37,6 +37,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
+      <head>
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SGYF6ZSPH6"></script>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-SGYF6ZSPH6');
+          `
+        }} />
+      </head>
       <body className={`${inter.className} flex flex-col min-h-screen bg-white`}>
         <header className="bg-white sticky top-0 z-10 h-24 border-b border-gray-100 flex items-center justify-center" style={{fontFamily:'Pretendard, system-ui, sans-serif'}}>
           <div className="w-full max-w-[1440px] flex items-center justify-between px-20 h-24">
