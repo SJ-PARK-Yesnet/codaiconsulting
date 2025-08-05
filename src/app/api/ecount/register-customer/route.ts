@@ -17,11 +17,11 @@ export async function POST(request: Request) {
     const apiDomain = DOMAIN || 'sboapi';
     
     // 이카운트 거래처 등록 API 호출
-    const apiUrl = `https://${apiDomain}${ZONE}.ecount.com/OAPI/V2/SalesBusiness/SaveSalesBusiness?SESSION_ID=${SESSION_ID}`;
+    const apiUrl = `https://${apiDomain}${ZONE}.ecount.com/OAPI/V2/AccountBasic/SaveBasicCust?SESSION_ID=${SESSION_ID}`;
 
     // API 요청 본문 구성
     const requestBody = {
-      "SalesBusinessList": [{
+      "CustList": [{
         "BulkDatas": {
           "CUST_CD": CUST.CUST_CD,
           "CUST_DES": CUST.CUST_DES,
@@ -29,7 +29,6 @@ export async function POST(request: Request) {
           "CEO_NM": CUST.CEO_NM || '',
           "ADDR": CUST.ADDR || '',
           "TEL": CUST.TEL || '',
-          "CUST_TYPE": "01" // 기본값: 일반
         }
       }]
     };
