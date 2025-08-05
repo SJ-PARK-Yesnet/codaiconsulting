@@ -5,26 +5,11 @@ export async function POST(request: Request) {
     // 요청 본문에서 데이터 추출
     const body = await request.json();
     
-    // 업로드 페이지에서 전송하는 형식과 기존 형식 모두 지원
-    let data;
-    let sessionId, zone, domain;
-    let isRegistration = false;
-    
-    if (body.data) {
-      // 업로드 페이지에서 전송하는 형식 (고객 등록)
-      data = body.data;
-      sessionId = body.SESSION_ID || 'default_session';
-      zone = body.ZONE || 'BA';
-      domain = body.DOMAIN || 'sboapi';
-      isRegistration = true;
-    } else {
-      // 기존 형식 (고객 조회)
-      const { SESSION_ID, ZONE, DOMAIN, SEARCH_TEXT } = body;
-      sessionId = SESSION_ID;
-      zone = ZONE;
-      domain = DOMAIN || 'sboapi';
-      isRegistration = false;
-    }
+    // 필수 파라미터 추출
+    const { data, SESSION_ID, ZONE, DOMAIN } = body;
+    const sessionId = SESSION_ID || 'default_session';
+    const zone = ZONE || 'BA';
+    const domain = DOMAIN || 'sboapi';
 
     // 필수 파라미터 검증
     if (!sessionId || !zone) {
@@ -34,105 +19,64 @@ export async function POST(request: Request) {
       );
     }
 
-    if (isRegistration) {
-      // 고객 등록 API
-      if (!data || data.length === 0) {
-        return NextResponse.json(
-          { error: '등록할 고객 데이터가 필요합니다.' },
-          { status: 400 }
-        );
-      }
+    // 고객 등록 API
+    if (!data || data.length === 0) {
+      return NextResponse.json(
+        { error: '등록할 고객 데이터가 필요합니다.' },
+        { status: 400 }
+      );
+    }
 
-      const apiUrl = `https://${domain}${zone}.ecount.com/OAPI/V2/AccountBasic/SaveBasicCust?SESSION_ID=${sessionId}`;
+    const apiUrl = `https://${domain}${zone}.ecount.com/OAPI/V2/AccountBasic/SaveBasicCust?SESSION_ID=${sessionId}`;
 
-      // 요청 데이터 구성
-      const requestData = {
-        "CustList": data.map((item: any) => ({
-          "BulkDatas": item
-        }))
-      };
+    // 요청 데이터 구성
+    const requestData = {
+      "CustList": data.map((item: any) => ({
+        "BulkDatas": item
+      }))
+    };
 
-      console.log('고객 등록 API URL:', apiUrl);
-      console.log('고객 등록 요청 데이터:', JSON.stringify(requestData, null, 2));
-      console.log('전송할 데이터 개수:', data.length);
+    console.log('고객 등록 API URL:', apiUrl);
+    console.log('고객 등록 요청 데이터:', JSON.stringify(requestData, null, 2));
+    console.log('전송할 데이터 개수:', data.length);
 
-      // 이카운트 API 호출
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
+    // 이카운트 API 호출
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestData)
+    });
+
+    // API 응답 처리
+    const responseData = await response.json();
+    console.log('이카운트 API 응답:', responseData);
+
+    // 응답 반환 - 더 자세한 응답 구조 확인
+    if (responseData.Status === '200' || responseData.Code === '200') {
+      return NextResponse.json({
+        success: true,
+        message: '고객 등록 성공',
+        data: responseData.Data || responseData
       });
-
-      // API 응답 처리
-      const responseData = await response.json();
-      console.log('이카운트 API 응답:', responseData);
-
-      // 응답 반환 - 더 자세한 응답 구조 확인
-      if (responseData.Status === '200' || responseData.Code === '200') {
-        return NextResponse.json({
-          success: true,
-          message: '고객 등록 성공',
-          data: responseData.Data || responseData
-        });
-      } else {
-        // 더 자세한 오류 정보 제공
-        const errorMessage = responseData.Message || responseData.error || '알 수 없는 오류';
-        console.error('고객 등록 실패 상세:', {
-          Status: responseData.Status,
-          Code: responseData.Code,
-          Message: responseData.Message,
-          Error: responseData.error,
-          FullResponse: responseData
-        });
-        
-        return NextResponse.json({
-          success: false,
-          message: `고객 등록 실패: ${errorMessage}`,
-          error: errorMessage,
-          details: responseData
-        });
-      }
     } else {
-      // 고객 조회 API (기존 기능)
-      const apiUrl = `https://${domain}${zone}.ecount.com/OAPI/V2/CustomerManagement/GetCustomersList?SESSION_ID=${sessionId}`;
-
-      // 요청 데이터 구성
-      const requestData = {
-        CUST_CD: body.SEARCH_TEXT || ''
-      };
-
-      console.log('고객 조회 API URL:', apiUrl);
-      console.log('고객 조회 요청 데이터:', requestData);
-
-      // 이카운트 API 호출
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
+      // 더 자세한 오류 정보 제공
+      const errorMessage = responseData.Message || responseData.error || '알 수 없는 오류';
+      console.error('고객 등록 실패 상세:', {
+        Status: responseData.Status,
+        Code: responseData.Code,
+        Message: responseData.Message,
+        Error: responseData.error,
+        FullResponse: responseData
       });
-
-      // API 응답 처리
-      const responseData = await response.json();
-      console.log('이카운트 API 응답:', responseData);
-
-      // 응답 반환
-      if (responseData.Status === '200') {
-        return NextResponse.json({
-          success: true,
-          message: '고객 조회 성공',
-          data: responseData.Data
-        });
-      } else {
-        return NextResponse.json({
-          success: false,
-          message: '고객 조회 실패',
-          error: responseData.Message
-        });
-      }
+      
+      return NextResponse.json({
+        success: false,
+        message: `고객 등록 실패: ${errorMessage}`,
+        error: errorMessage,
+        details: responseData
+      });
     }
   } catch (error) {
     console.error('고객 API 오류:', error);
