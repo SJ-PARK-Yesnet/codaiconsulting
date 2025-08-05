@@ -2,30 +2,44 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    // 요청 본문에서 필요한 데이터 추출
-    const { SESSION_ID, ZONE, DOMAIN, PRODUCT_DATA } = await request.json();
+    // 요청 본문에서 데이터 추출
+    const body = await request.json();
+    
+    // 업로드 페이지에서 전송하는 형식과 기존 형식 모두 지원
+    let data;
+    let sessionId, zone, domain;
+    
+    if (body.data) {
+      // 업로드 페이지에서 전송하는 형식
+      data = body.data;
+      sessionId = body.SESSION_ID || 'default_session';
+      zone = body.ZONE || 'BA';
+      domain = body.DOMAIN || 'sboapi';
+    } else {
+      // 기존 형식
+      const { SESSION_ID, ZONE, DOMAIN, PRODUCT_DATA } = body;
+      data = PRODUCT_DATA ? [PRODUCT_DATA] : [];
+      sessionId = SESSION_ID;
+      zone = ZONE;
+      domain = DOMAIN || 'sboapi';
+    }
 
     // 필수 파라미터 검증
-    if (!SESSION_ID || !ZONE || !PRODUCT_DATA) {
+    if (!sessionId || !zone || !data || data.length === 0) {
       return NextResponse.json(
-        { error: 'SESSION_ID, ZONE, PRODUCT_DATA 파라미터가 필요합니다.' },
+        { error: '필수 파라미터가 누락되었습니다.' },
         { status: 400 }
       );
     }
 
-    // API 도메인 설정 (기본값은 sboapi)
-    const apiDomain = DOMAIN || 'sboapi';
-
     // API URL 구성
-    const apiUrl = `https://${apiDomain}${ZONE}.ecount.com/OAPI/V2/InventoryBasic/SaveBasicProduct?SESSION_ID=${SESSION_ID}`;
+    const apiUrl = `https://${domain}${zone}.ecount.com/OAPI/V2/InventoryBasic/SaveBasicProduct?SESSION_ID=${sessionId}`;
 
     // 요청 데이터 구성
     const requestData = {
-      "ProductList": [
-        {
-          "BulkDatas": PRODUCT_DATA
-        }
-      ]
+      "ProductList": data.map((item: any) => ({
+        "BulkDatas": item
+      }))
     };
 
     console.log('품목 등록 API URL:', apiUrl);

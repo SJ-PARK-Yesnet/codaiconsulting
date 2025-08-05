@@ -92,6 +92,7 @@ export default function RootLayout({
                   <span className="text-[18px] font-medium text-[#1F2123] mb-1">ERP 컨설팅</span>
                   <Link href="/company-info" className="text-[14px] text-[#4B5563] hover:text-blue-500 transition-colors">ERP 추천</Link>
                   <Link href="/ecount-consulting" className="text-[14px] text-[#4B5563] hover:text-blue-500 transition-colors">이카운트ERP 컨설팅</Link>
+                  <Link href="/insight" className="text-[14px] text-[#4B5563] hover:text-blue-500 transition-colors">ERP 인사이트</Link>
                 </div>
                 {/* API 분석 */}
                 <div className="flex flex-col gap-2 min-w-[120px]">

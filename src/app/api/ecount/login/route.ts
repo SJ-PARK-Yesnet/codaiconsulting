@@ -16,6 +16,7 @@ export async function POST(request: Request) {
     // sboapi와 oapi를 순차적으로 시도하는 함수
     const callApi = async (domain: string) => {
       const apiUrl = `https://${domain}${ZONE}.ecount.com/OAPI/V2/OAPILogin`;
+      // 이카운트 API 요청 구조에 맞게 수정
       const requestData = {
         COM_CODE,
         USER_ID,
@@ -23,6 +24,9 @@ export async function POST(request: Request) {
         LAN_TYPE: LAN_TYPE || 'ko-KR',
         ZONE
       };
+
+      // VBA 참고자료에 따르면 JSON 형식으로 전송
+      const jsonRequest = JSON.stringify(requestData);
 
       console.log(`로그인 API 요청 (${domain}):`, apiUrl);
       console.log('요청 데이터:', JSON.stringify(requestData));
@@ -32,8 +36,10 @@ export async function POST(request: Request) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
           },
-          body: JSON.stringify(requestData),
+          body: jsonRequest,
         });
 
         // 응답 상태 로깅

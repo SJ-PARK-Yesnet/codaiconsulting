@@ -69,6 +69,9 @@ export default function DropdownMenus() {
               <Link href="/ecount-consulting" className="text-[14px] font-normal text-[#1F2123] hover:text-blue-500 transition-colors" style={{ fontFamily: "Pretendard" }}>
                 이카운트ERP 컨설팅
               </Link>
+              <Link href="/insight" className="text-[14px] font-normal text-[#1F2123] hover:text-blue-500 transition-colors" style={{ fontFamily: "Pretendard" }}>
+                ERP 인사이트
+              </Link>
             </div>
           </div>
         </div>
